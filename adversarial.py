@@ -1,8 +1,9 @@
 from keras.applications.resnet50 import ResNet50, decode_predictions
 from keras.layers import Input
 from keras import backend as K
-from processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
+from scipy.misc import imsave
 import numpy as np
+from processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
 
 # Fetch the pretrained ResNet-50
 model = ResNet50(weights='imagenet', include_top=True)
@@ -44,10 +45,18 @@ img = load_and_process('elephant.jpg', target_size=(img_h, img_w))
 preds = model.predict(img)
 print('Original image predictions:', decode_predictions(preds, top=5)[0])
 
-img = fgsm(np.copy(img))
+adv_img = fgsm(np.copy(img))
 
-preds = model.predict(img)
+preds = model.predict(adv_img)
 print('Adversarial image predictions:', decode_predictions(preds, top=5)[0])
 
-deprocess_and_save(img, 'adv_elephant.jpg')
+# Plot the amplified difference
+diff = deprocess_batch(np.copy(adv_img)) - deprocess_batch(np.copy(img))
+diff -= np.min(diff)
+diff *= 255.0 / np.max(diff)
+diff = diff[:, :, ::-1]
+diff = np.squeeze(np.clip(diff, 0, 255).astype('uint8'))
+imsave('adv_diff.jpg', diff)
+
+deprocess_and_save(adv_img, 'adv_elephant.jpg')
 
