@@ -1,7 +1,7 @@
 from keras.applications.resnet50 import ResNet50, decode_predictions
 from keras.layers import Input
 from keras import backend as K
-from processing import load_and_process, deprocess_and_save
+from processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
 import numpy as np
 
 # Fetch the pretrained ResNet-50
@@ -34,7 +34,7 @@ def fgsm(x, eps=32, alp=1.0):
         grads = np.array(f([x, 0])).reshape((1, img_h, img_w, img_d)).astype('float64')
         adv_x = x - alp * np.sign(grads)
         sub_x = np.minimum(x + eps, np.maximum(x - eps, adv_x))
-        next_x = np.clip(sub_x, 0.0 , 255.0)
+        next_x = preprocess_batch(deprocess_batch(next_x))
         x = next_x
         conf = model.predict(x)[0, cid]
         print('Confidence:', conf)
@@ -43,6 +43,8 @@ def fgsm(x, eps=32, alp=1.0):
 img = load_and_process('elephant.jpg', target_size=(img_h, img_w))
 preds = model.predict(img)
 print('Original image predictions:', decode_predictions(preds, top=5)[0])
+
+deprocess_and_save(np.copy(img), 'or_elephant.jpg')
 
 img = fgsm(np.copy(img))
 
