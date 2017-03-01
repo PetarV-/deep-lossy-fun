@@ -2,6 +2,8 @@
 # gradients separately, without having to call the
 # getter function twice.
 
+# Not useful for FGSM, but works for any other gradient-based method.
+
 class Eval(object):
     def __init__(self, f):
         self.l = None
