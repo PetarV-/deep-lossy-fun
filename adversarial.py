@@ -29,7 +29,8 @@ f = K.function([inp, K.learning_phase()], K.gradients(loss, inp))
 def fgsm(x, eps=32, alp=1.0):
     num_iter = min(eps + 4, 1.25 * eps)
     conf = 0.0
-    while conf < 0.99 and num_iter > 0:
+    x = np.copy(x)
+    while conf < 0.9 and num_iter > 0:
         grads = np.array(f([x, 0])).reshape((1, img_h, img_w, img_d)).astype('float64')
         adv_x = x - alp * np.sign(grads)
         sub_x = np.minimum(x + eps, np.maximum(x - eps, adv_x))
@@ -43,7 +44,7 @@ img = load_and_process('elephant.jpg', target_size=(img_h, img_w))
 preds = model.predict(img)
 print('Original image predictions:', decode_predictions(preds, top=5)[0])
 
-img = fgsm(img)
+img = fgsm(np.copy(img))
 
 preds = model.predict(img)
 print('Adversarial image predictions:', decode_predictions(preds, top=5)[0])
