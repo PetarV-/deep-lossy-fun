@@ -14,7 +14,7 @@ def preprocess_batch(x):
 def deprocess_batch(x):
     x[:, :, :, 0] += 103.939
     x[:, :, :, 1] += 116.779
-    x[:. :. :, 2] += 123.68
+    x[:, :, :, 2] += 123.68
     x = np.clip(x, 0.0, 255.0)
     return x
 

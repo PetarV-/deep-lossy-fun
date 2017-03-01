@@ -30,11 +30,11 @@ def fgsm(x, eps=32, alp=1.0):
     num_iter = min(eps + 4, 1.25 * eps)
     conf = 0.0
     x = np.copy(x)
-    while conf < 0.9 and num_iter > 0:
+    while conf < 0.99 and num_iter > 0:
         grads = np.array(f([x, 0])).reshape((1, img_h, img_w, img_d)).astype('float64')
         adv_x = x - alp * np.sign(grads)
         sub_x = np.minimum(x + eps, np.maximum(x - eps, adv_x))
-        next_x = preprocess_batch(deprocess_batch(next_x))
+        next_x = preprocess_batch(deprocess_batch(np.copy(sub_x)))
         x = next_x
         conf = model.predict(x)[0, cid]
         print('Confidence:', conf)
@@ -43,8 +43,6 @@ def fgsm(x, eps=32, alp=1.0):
 img = load_and_process('elephant.jpg', target_size=(img_h, img_w))
 preds = model.predict(img)
 print('Original image predictions:', decode_predictions(preds, top=5)[0])
-
-deprocess_and_save(np.copy(img), 'or_elephant.jpg')
 
 img = fgsm(np.copy(img))
 
