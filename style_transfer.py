@@ -14,7 +14,7 @@ img_d = 3
 
 # Fetch the base and reference images, store them in tensors
 inp_base = K.variable(load_and_process('trin.jpg', target_size=(img_h, img_w)))
-inp_ref = K.variable(load_and_process('vlv.jpg', target_size=(img_h, img_w)))
+inp_ref = K.variable(load_and_process('wave.jpg', target_size=(img_h, img_w)))
 # Construct a variable for the final result
 inp_comb = K.placeholder((1, img_h, img_w, img_d))
 
@@ -97,9 +97,8 @@ def eval_loss_and_grads(x):
 
 evaluator = Eval(eval_loss_and_grads)
 
-# Start from a random image, and apply gradient-based optimisation for some no. of iterations
+# Start from the base image, and apply gradient-based optimisation for some no. of iterations
 iters = 10
-#x = np.random.uniform(0, 255, (1, img_h, img_w, 3)) - 128.0
 x = load_and_process('trin.jpg', target_size=(img_h, img_w))
 
 for i in range(iters):
