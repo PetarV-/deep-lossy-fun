@@ -29,23 +29,25 @@ def activation_loss(gen):
 # The "L2-loss":
 # Don't want an overly bright image. This is basically the negation of the activation loss.
 def l2_loss(gen):
-    return -activation_loss(gen)
+    shape = K.int_shape(gen)
+    return K.sum(K.square(gen)) / np.prod(shape[1:])
 
 # The "continuity loss":
 # Make sure the generated image has continuity (squared difference of neighbouring pixels)
 def continuity_loss(gen):
+    shape = K.int_shape(gen)
     row_diff = K.square(gen[:, :img_h - 1, :img_w - 1, :] - gen[:, 1:, :img_w - 1, :])
     col_diff = K.square(gen[:, :img_h - 1, :img_w - 1, :] - gen[:, :img_h - 1, 1:, :])
-    return K.sum(row_diff + col_diff)
+    return K.sum(row_diff + col_diff) / np.prod(shape[1:])
 
 # Define the overall loss as the combination of the above
-activation_wt = 0.05
+activation_wt = 5.0
 l2_wt = 0.02
 continuity_wt = 0.1
 
 loss = K.variable(0.)
 # Make the activations at many scales "light up"
-acts = ['block2_conv2', 'block4_conv2', 'block5_conv2']
+acts = ['block5_conv1', 'block5_conv2']
 for lyr in acts:
     loss += activation_wt * activation_loss(lyr_dict[lyr])
 # Make the L2 of the image small
@@ -78,8 +80,8 @@ iters = 7
 x = load_and_process('trin.jpg', target_size=(img_h, img_w))
 
 for i in range(iters):
-    x, new_loss, _ = fmin_l_bfgs_b(evaluator.loss, x.flatten(), fprime=evaluator.grads, maxfun=20)
+    x, new_loss, _ = fmin_l_bfgs_b(evaluator.loss, x.flatten(), fprime=evaluator.grads, maxfun=7)
     print('Iteration', i, '- loss:', new_loss)
     x = x.reshape((1, img_h, img_w, img_d))
-    deprocess_and_save(np.copy(x), 'nst_trin_{}.jpg'.format(i))
+    deprocess_and_save(np.copy(x), 'trip_trin_{}.jpg'.format(i))
     
