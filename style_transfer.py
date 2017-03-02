@@ -8,13 +8,13 @@ from processing import load_and_process, deprocess_and_save, preprocess_batch
 from evaluator import Eval
 
 # Specify size of images that we are considering
-img_h = 600
-img_w = 600
+img_h = 1024
+img_w = 1024
 img_d = 3
 
 # Fetch the base and reference images, store them in tensors
 inp_base = K.variable(load_and_process('trin.jpg', target_size=(img_h, img_w)))
-inp_ref = K.variable(load_and_process('endless_river.jpg', target_size=(img_h, img_w)))
+inp_ref = K.variable(load_and_process('pfloyd.jpg', target_size=(img_h, img_w)))
 # Construct a variable for the final result
 inp_comb = K.placeholder((1, img_h, img_w, img_d))
 
@@ -25,7 +25,7 @@ inp = K.concatenate([inp_base, inp_ref, inp_comb], axis=0)
 model = ResNet50(input_tensor=inp, weights='imagenet', include_top=False)
 
 # Extract the layers of the model
-lyr_dict = dict([(lyr.name, lyr.output) for layer in model])
+lyr_dict = dict([(lyr.name, lyr.output) for lyr in model.layers])
 
 # Helper function to extract the Gram matrix of a tensor
 def gram(x):
@@ -53,8 +53,8 @@ def content_loss(gen, base):
 # The "continuity loss":
 # Make sure the generated image has continuity (squared difference of neighbouring pixels)
 def continuity_loss(gen):
-    row_diff = K.square(x[:, :img_h - 1, :img_w - 1, :] - x[:, 1:, :img_w - 1, :])
-    col_diff = K.square(x[:, :img_h - 1, :img_w - 1, :] - x[:, :img_h - 1, 1:, :])
+    row_diff = K.square(gen[:, :img_h - 1, :img_w - 1, :] - gen[:, 1:, :img_w - 1, :])
+    col_diff = K.square(gen[:, :img_h - 1, :img_w - 1, :] - gen[:, :img_h - 1, 1:, :])
     return K.sum(row_diff + col_diff)
 
 # Define the overall loss as the weighted combination of the three
@@ -69,11 +69,11 @@ base_fts = content_fts[0, :, :, :]
 gen_fts = content_fts[2, :, :, :]
 loss += content_wt * content_loss(gen_fts, base_fts)
 # Make the styles at many scales match
-style_layers = ['conv1', 'res2a_branch2a', 'res3a_branch2a', 'res4a_branch2a', 'res5a_branch5a']
+style_layers = ['conv1', 'res2a_branch2a', 'res3a_branch2a', 'res4a_branch2a', 'res5a_branch2a']
 for lyr in style_layers:
     style_fts = lyr_dict[lyr]
     ref_fts = style_fts[1, :, :, :]
-    gen_fts = content_fts[2, :, :, :]
+    gen_fts = style_fts[2, :, :, :]
     loss += style_wt * style_loss(gen_fts, ref_fts) / len(style_layers)
 # Finally, enforce continuity
 loss += continuity_wt * continuity_loss(inp_comb)
@@ -87,11 +87,11 @@ else:
     outputs.append(grads)
 
 # A function that will give us the gradients wrt the input
-f = K.function([inp, K.learning_phase()], outputs)
+f = K.function([inp_comb, K.learning_phase()], outputs)
 
 def eval_loss_and_grads(x):
     x = x.reshape((1, img_h, img_w, img_d))
-    outs = f([x])
+    outs = f([x, 0])
     loss_val = outs[0]
     grads_val = np.array(outs[1:]).flatten().astype('float64')
     return loss_val, grads_val

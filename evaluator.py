@@ -1,3 +1,5 @@
+import numpy as np
+
 # A helper class, that allows getting the loss and
 # gradients separately, without having to call the
 # getter function twice.
