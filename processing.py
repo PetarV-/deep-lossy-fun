@@ -28,7 +28,7 @@ def load_and_process(img_path, target_size=None):
     
     # Perform the usual ImageNet preprocessing
     img = preprocess_input(img)
-    
+
     return img
 
 def deprocess_and_save(x, img_path):
