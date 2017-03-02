@@ -1,12 +1,12 @@
-from keras.applications.resnet50 import ResNet50, decode_predictions
+from keras.applications.vgg16 import VGG16, decode_predictions
 from keras.layers import Input
 from keras import backend as K
 from scipy.misc import imsave
 import numpy as np
 from processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
 
-# Fetch the pretrained ResNet-50
-model = ResNet50(weights='imagenet', include_top=True)
+# Fetch the pretrained VGG-16
+model = VGG16(weights='imagenet', include_top=True)
 
 # We're using the full predictor, so must give 224 x 224 x 3 images
 img_h = 224
