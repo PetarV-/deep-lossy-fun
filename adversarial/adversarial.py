@@ -1,9 +1,12 @@
+import sys
+sys.path.append('..')
+
 from keras.applications.vgg16 import VGG16, decode_predictions
 from keras.layers import Input
 from keras import backend as K
 from scipy.misc import imsave
 import numpy as np
-from processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
+from utils.processing import preprocess_batch, deprocess_batch, load_and_process, deprocess_and_save
 
 # Fetch the pretrained VGG-16
 model = VGG16(weights='imagenet', include_top=True)

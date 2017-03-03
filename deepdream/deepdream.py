@@ -1,11 +1,14 @@
+import sys
+sys.path.append('..')
+
 from keras.applications.vgg16 import VGG16, decode_predictions
 from keras.layers import Input
 from keras import backend as K
 from scipy.misc import imsave
 from scipy.optimize import fmin_l_bfgs_b
 import numpy as np
-from processing import load_and_process, deprocess_and_save, preprocess_batch
-from evaluator import Eval
+from utils.processing import load_and_process, deprocess_and_save, preprocess_batch
+from utils.evaluator import Eval
 
 # Specify size of images that we are considering
 img_h = 600
